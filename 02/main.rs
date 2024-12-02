@@ -41,6 +41,32 @@ fn is_report_safe(report: &Vec<i32>) -> bool {
     return true;
 }
 
+fn copy_without(inlet: &Vec<i32>, n: usize, size: usize) -> Vec<i32> {
+    let mut outlet: Vec<i32> = vec![];
+
+    for i in 0..size {
+        if i != n {
+            outlet.push(inlet[i]);
+        }
+    }
+
+    return outlet;
+}
+
+fn is_any_report_safe(report: &Vec<i32>) -> bool {
+    let mut inlet: Vec<i32>;
+    let size = report.len();
+
+    for n in 0..size {
+        inlet = copy_without(report, n, size);
+        if is_report_safe(&inlet) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 fn main() {
     let stdin = io::stdin();
     let mut line: String;
@@ -52,6 +78,8 @@ fn main() {
         if line.len() > 0 {
             report = parse_input(line);
             if is_report_safe(&report) {
+                result += 1;
+            } else if is_any_report_safe(&report) {
                 result += 1;
             }
         }
