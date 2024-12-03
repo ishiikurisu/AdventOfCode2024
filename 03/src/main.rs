@@ -2,7 +2,8 @@ use regex::Regex;
 use std::io::{self, BufRead};
 
 fn capture(haystack: &String) -> Vec<String> {
-    let re = Regex::new(r"mul\(\d\d?\d?,\d\d?\d?\)").unwrap();
+    let pattern = r"(mul\(\d\d?\d?,\d\d?\d?\))|(do\(\))|(don't\(\))";
+    let re = Regex::new(pattern).unwrap();
     return re.find_iter(haystack).map(|m| m.as_str().to_string()).collect();
 }
 
@@ -23,13 +24,20 @@ fn main() {
     let mut line: String;
     let mut matches: Vec<String>;
     let mut result: i32 = 0;
+    let mut enabled: bool = true;
 
     for raw_line in stdin.lock().lines() {
         line = raw_line.unwrap();
         if line.len() > 0 {
             matches = capture(&line);
             for m in matches {
-                result += apply_mul(&m);
+                if m == "do()" {
+                    enabled = true;
+                } else if m == "don't()" {
+                    enabled = false;
+                } else if enabled {
+                    result += apply_mul(&m); 
+                }
             }
         }
     }
