@@ -35,8 +35,11 @@ fn is_wall(p: &Vec<bool>, w: i64, _h: i64, x: i64, y: i64) -> bool {
 // w: width
 // h: height
 // o: outlet
-fn evaluate(p: &Vec<bool>, x0: i64, y0: i64, w: i64, h: i64) -> Vec<bool> {
-    let mut o: Vec<bool> = vec![];
+fn loops(p: &Vec<bool>, x0: i64, y0: i64, w: i64, h: i64) -> bool {
+    let mut o0: Vec<bool> = vec![];
+    let mut o1: Vec<bool> = vec![];
+    let mut o2: Vec<bool> = vec![];
+    let mut o3: Vec<bool> = vec![];
     let mut x: i64 = x0;
     let mut y: i64 = y0;
     let mut dx: i64;
@@ -44,15 +47,55 @@ fn evaluate(p: &Vec<bool>, x0: i64, y0: i64, w: i64, h: i64) -> Vec<bool> {
     let mut x1: i64;
     let mut y1: i64;
     let mut d: i64 = 0;
+    let mut i: usize;
 
     // allocate memory
     for _x in 0..(h * w) {
-        o.push(false);
+        o0.push(false);
+        o1.push(false);
+        o2.push(false);
+        o3.push(false);
     }
 
+    // for each possible movement
     loop {
-        o[(x + (y * w)) as usize] = true;
+        // checking if guard has been here already in this state
+        i = (x + (y * w)) as usize; 
+        match d {
+            0 => {
+                if o0[i] {
+                    return true;
+                } else {
+                    o0[i] = true;
+                }
+            },
+            1 => {
+                if o1[i] {
+                    return true;
+                } else {
+                    o1[i] = true;
+                }
 
+            },
+            2 => {
+                if o2[i] {
+                    return true;
+                } else {
+                    o2[i] = true;
+                }
+
+            },
+            3 => {
+                if o3[i] {
+                    return true;
+                } else {
+                    o3[i] = true;
+                }
+            },
+            _ => todo!(),
+        }
+
+        // determining next movement
         (dx, dy) = direction_to_delta(d); 
         (x1, y1) = (x + dx, y + dy);
 
@@ -64,6 +107,32 @@ fn evaluate(p: &Vec<bool>, x0: i64, y0: i64, w: i64, h: i64) -> Vec<bool> {
             d = next_direction(d);
         } else {
             (x, y) = (x1, y1);
+        }
+    }
+
+    // if he leaves the area, this never works
+    return false;
+}
+
+fn evaluate(p: &Vec<bool>, x0: i64, y0: i64, w: i64, h: i64) -> i64 {
+    let mut t: Vec<bool> = vec![];
+    let limit: usize = p.len();
+    let p0: usize = (x0 + (y0 * w)) as usize;
+    let mut o: i64 = 0;
+
+    // allocate memory
+    for it in p {
+        t.push(*it);
+    }
+
+    // try every possibility
+    for i in 0..limit {
+        if (!t[i]) && (i != p0) {
+            t[i] = true;
+            if loops(&t, x0, y0, w, h) {
+                o += 1;
+            }
+            t[i] = false;
         }
     }
 
@@ -83,8 +152,6 @@ fn main() {
     let stdin = io::stdin();
     let mut puzzle: Vec<bool> = vec![];
     let mut line: String;
-    let results: Vec<bool>;
-    let mut result: i64 = 0;
     let mut width: i64 = 0;
     let mut height: i64 = 0;
     let mut x0: i64 = -1;
@@ -112,12 +179,6 @@ fn main() {
         }
     }
 
-    results = evaluate(&puzzle, x0, y0, width, height);
-    for r in results {
-        if r {
-            result += 1;
-        }
-    }
-    println!("{}", result);
+    println!("{}", evaluate(&puzzle, x0, y0, width, height));
 }
 
