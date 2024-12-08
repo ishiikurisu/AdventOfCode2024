@@ -1,5 +1,9 @@
-function main()
-  local fp = io.open("input.txt")
+function hash_location(x, y, w, h)
+  return (x - 1) + (w * (y - 1))
+end
+
+function main(input_file)
+  local fp = io.open(input_file)
   local lines = fp:lines()
   local first_line = true
   local antenna_groups = { }
@@ -15,9 +19,8 @@ function main()
   local dy = 0
   local ax = 0  -- antinode x
   local ay = 0  -- antinode y
-  local ah = 0  -- antinode position hash
   local unique_locations = { }
-  local result = 0
+  local antinode_count = 0
 
   -- read
   for line in lines do
@@ -37,6 +40,7 @@ function main()
           end
           table.insert(antenna_group, {n, h})
           antenna_groups[c] = antenna_group
+          unique_locations[hash_location(n, h, w, h)] = true
         end
       end
     end
@@ -57,9 +61,10 @@ function main()
           ax = x1 + dx
           ay = y1 + dy
 
-          if (ax > 0) and (ax <= w) and (ay > 0) and (ay <= h) then
-            ah = (ax - 1) + (w * (ay - 1))
-            unique_locations[ah] = true
+          while (ax > 0) and (ax <= w) and (ay > 0) and (ay <= h) do
+            unique_locations[hash_location(ax, ay, w, h)] = true
+            ax = ax + dx
+            ay = ay + dy
           end
         end
       end
@@ -67,11 +72,13 @@ function main()
   end
 
   -- print
+  antinode_count = 0
   for k, _ in pairs(unique_locations) do
-    result = result + 1
+    antinode_count = antinode_count + 1
   end
-  print(result)
+  print(antinode_count)
 end
 
-main()
+main("sample.txt")
+main("input.txt")
 
